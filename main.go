@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "minikubectl/cmd"
+import "github.com/jedipunkz/minikubectl/cmd"
 
 func main() {
   cmd.Execute()
