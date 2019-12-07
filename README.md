@@ -2,6 +2,8 @@
 
 🔥 Minimal 🔥 k8s Client CLI. Using [client-go](https://github.com/kubernetes/client-go) (as Kubernetes Library).
 
+[![Build Status](https://travis-ci.org/jedipunkz/minikubectl.svg?branch=master)](https://travis-ci.org/jedipunkz/minikubectl)
+
 ## Installation
 
 ```bash
