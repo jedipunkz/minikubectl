@@ -25,4 +25,4 @@ notifications:
   email: false
 
 script:
-  - minikuectl -h
+  - minikubectl -h
