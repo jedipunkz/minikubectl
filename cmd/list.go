@@ -92,6 +92,7 @@ func listDeployments(clientset *kubernetes.Clientset) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("🍺 There are %d deployments in the cluster\n", len(list.Items))
 	for _, d := range list.Items {
 		fmt.Printf(" * %s (%d replicas)\n", d.Name, *d.Spec.Replicas)
 	}
@@ -102,7 +103,7 @@ func listPods(clientset *kubernetes.Clientset) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+	fmt.Printf("🍉 There are %d pods in the cluster\n", len(pods.Items))
 	for _, d := range pods.Items {
 		fmt.Printf(" * %s\n", d.Name)
 	}
