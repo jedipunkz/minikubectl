@@ -119,9 +119,10 @@ minikubectl create --deployment deployment01 --app app01 --container web01 --ima
 		fmt.Println("Creating deployment...")
 		result, err := deploymentsClient.Create(deployment)
 		if err != nil {
-			fmt.Printf("Fatal error: %s", err)
+			fmt.Printf("☔ Fatal error: %s", err)
+		} else {
+			fmt.Printf("🍺 Created deployment %q.\n", result.GetObjectMeta().GetName())
 		}
-		fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 	},
 }
 

@@ -54,6 +54,8 @@ Create Deployment.
 
 ```bash
 minikubectl create --deployment demo --app demo --container demo --image nginx:1.12 --port 80 --replica 1
+Creating deployment...
+🍺 Created deployment "demo".
 ```
 
 Delete Deployment.
@@ -63,5 +65,5 @@ Delete Deployment.
 ```bash
 minikubectl delete --deployment demo
 Deleting deployment...
-🌅 Deleted deployment.
+🍺 Deleted deployment.
 ```

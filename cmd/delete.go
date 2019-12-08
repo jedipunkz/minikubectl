@@ -74,7 +74,7 @@ minikubectl delete --deployment demo`,
 		}); err != nil {
 			fmt.Printf("☔ Fatal error: %s", err)
 		} else {
-			fmt.Println("🌅 Deleted deployment.")
+			fmt.Println("🍺 Deleted deployment.")
 		}
 	},
 }
