@@ -42,3 +42,17 @@ minikubectl list pods
  * kube-scheduler-minikube
  * storage-provisioner
 ```
+
+Create Deployment.
+
+* --deployment: Deployment Name (Required Argument)
+* --app: Application Name
+* --container: Container Name
+* --image: Container Image Name and Tag (Required Argument)
+* --port: Port Number (Required Argument)
+* --replica: Replica Number
+
+```bash
+minikubectl create --deployment demo --app demo --container demo --image nginx:1.12 --port 80 --replica 1
+```
+
