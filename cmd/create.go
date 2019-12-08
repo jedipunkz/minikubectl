@@ -32,11 +32,11 @@ import (
 
 type Options struct {
 	deployment string
-	app string
-	container string
-	image string
-	port int32
-	replica int32
+	app        string
+	container  string
+	image      string
+	port       int32
+	replica    int32
 }
 
 var (
@@ -59,23 +59,23 @@ minikubectl create --deployment deployment01 --app app01 --container web01 --ima
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-        var kubeconfig *string
-        if home := homedir.HomeDir(); home != "" {
-            kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-        } else {
-            kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-        }
-        flag.Parse()
+		var kubeconfig *string
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
 
-        config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-        if err != nil {
-            panic(err)
-        }
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err)
+		}
 
-        clientset, err := kubernetes.NewForConfig(config)
-        if err != nil {
-            panic(err)
-        }
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
 
 		deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
@@ -140,4 +140,3 @@ func init() {
 }
 
 func int32Ptr(i int32) *int32 { return &i }
-
