@@ -16,10 +16,13 @@ go:
 git:
   depth: 1
 
+before_install:
+  - go get github.com/golang/dep/...
+
 # Skip the install step. Don't `go get` dependencies. Only build with the code
 # in vendor/
 install:
-  - go get -u github.com/jedipunkz/minikubectl
+  - $GOPATH/bin/dep ensure
 
 notifications:
   email: false
