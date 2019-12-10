@@ -1,5 +1,5 @@
 # use the latest ubuntu environment (18.04) available on travis
-# dist: bionic
+dist: bionic
 
 language: go
 
@@ -9,20 +9,24 @@ language: go
 
 # You don't need to test on very old versions of the Go compiler. It's the user's
 # responsibility to keep their compiler up to date.
-# go:
-#   - 1.13.x
+go:
+  - 1.13.x
 
 # Only clone the most recent commit.
 git:
   depth: 1
 
+before_install:
+  - go get github.com/golang/dep/...
+
 # Skip the install step. Don't `go get` dependencies. Only build with the code
 # in vendor/
 install:
-  - go install github.com/jedipunkz/minikubectl
+  - $GOPATH/bin/dep ensure
+  - go build
 
 notifications:
   email: false
 
 script:
-  - minikubectl -h
+  - ./minikubectl -h
