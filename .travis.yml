@@ -23,7 +23,6 @@ before_install:
 # in vendor/
 install:
   - $GOPATH/bin/dep ensure
-  - ls -l $GOPATH/bin/
   - go build
 
 notifications:
