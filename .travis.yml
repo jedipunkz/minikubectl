@@ -19,7 +19,7 @@ git:
 # Skip the install step. Don't `go get` dependencies. Only build with the code
 # in vendor/
 install:
-  - go install github.com/jedipunkz/minikubectl
+  - go get -u github.com/jedipunkz/minikubectl
 
 notifications:
   email: false
