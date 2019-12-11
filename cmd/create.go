@@ -89,7 +89,7 @@ minikubectl create --deployment deployment01 --app app01 --container web01 --ima
 					"name": o.deployment,
 				},
 				"spec": map[string]interface{}{
-					"replicas": 2,
+					"replicas": o.replica,
 					"selector": map[string]interface{}{
 						"matchLabels": map[string]interface{}{
 							"app": o.app,
