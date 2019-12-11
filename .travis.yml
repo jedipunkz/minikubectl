@@ -16,13 +16,9 @@ go:
 git:
   depth: 1
 
-before_install:
-  - go get github.com/golang/dep/...
-
 # Skip the install step. Don't `go get` dependencies. Only build with the code
 # in vendor/
 install:
-  - $GOPATH/bin/dep ensure
   - go build
 
 notifications:
