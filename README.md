@@ -58,6 +58,22 @@ Creating deployment...
 🍺 Created deployment "demo".
 ```
 
+Update Deployment
+
+* --deployment: Deployment Name (Required Argument)
+* --image: Container Image Name and Tag
+* --replica: Replica Number
+
+```bash
+# update image tag
+minikubectl update --deployment demo --image nginx:1.11
+Updating deployment...
+🐙 Updated deployment...
+# update replica number
+minikubectl update --deployment demo --replica 10
+Updating deployment...
+🐙 Updated deployment...
+
 Delete Deployment.
 
 * --deployment: Deployment Name (Required Argument)
