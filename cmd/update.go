@@ -82,7 +82,6 @@ minikubectl update --deployment deployment01 --app app01 --container web01 --ima
 
 		deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 
-		fmt.Printf("%d", ou.replica)
 		// Update Deployment
 		fmt.Println("Updating deployment...")
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
