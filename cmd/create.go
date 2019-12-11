@@ -22,21 +22,21 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
 
 type Options struct {
 	deployment string
-	app string
-	container string
-	image string
-	port int32
-	replica int32
+	app        string
+	container  string
+	image      string
+	port       int32
+	replica    int32
 }
 
 var (
@@ -59,53 +59,60 @@ minikubectl create --deployment deployment01 --app app01 --container web01 --ima
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-        var kubeconfig *string
-        if home := homedir.HomeDir(); home != "" {
-            kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-        } else {
-            kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-        }
-        flag.Parse()
+		var kubeconfig *string
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
 
-        config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-        if err != nil {
-            panic(err)
-        }
+		namespace := "default"
 
-        clientset, err := kubernetes.NewForConfig(config)
-        if err != nil {
-            panic(err)
-        }
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err)
+		}
 
-		deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+		client, err := dynamic.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
 
-		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: o.deployment,
-			},
-			Spec: appsv1.DeploymentSpec{
-				Replicas: int32Ptr(o.replica),
-				Selector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"app": o.app,
-					},
+		deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+
+		deployment := &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "apps/v1",
+				"kind":       "Deployment",
+				"metadata": map[string]interface{}{
+					"name": o.deployment,
 				},
-				Template: apiv1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: map[string]string{
+				"spec": map[string]interface{}{
+					"replicas": 2,
+					"selector": map[string]interface{}{
+						"matchLabels": map[string]interface{}{
 							"app": o.app,
 						},
 					},
-					Spec: apiv1.PodSpec{
-						Containers: []apiv1.Container{
-							{
-								Name:  o.container,
-								Image: o.image,
-								Ports: []apiv1.ContainerPort{
-									{
-										Name:          "http",
-										Protocol:      apiv1.ProtocolTCP,
-										ContainerPort: o.port,
+					"template": map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"labels": map[string]interface{}{
+								"app": o.app,
+							},
+						},
+
+						"spec": map[string]interface{}{
+							"containers": []map[string]interface{}{
+								{
+									"name":  o.container,
+									"image": o.image,
+									"ports": []map[string]interface{}{
+										{
+											"name":          "http",
+											"protocol":      "TCP",
+											"containerPort": o.port,
+										},
 									},
 								},
 							},
@@ -117,11 +124,11 @@ minikubectl create --deployment deployment01 --app app01 --container web01 --ima
 
 		// Create Deployment
 		fmt.Println("Creating deployment...")
-		result, err := deploymentsClient.Create(deployment)
+		result, err := client.Resource(deploymentsRes).Namespace(namespace).Create(deployment, metav1.CreateOptions{})
 		if err != nil {
 			fmt.Printf("☔ Fatal error: %s", err)
 		} else {
-			fmt.Printf("🍺 Created deployment %q.\n", result.GetObjectMeta().GetName())
+			fmt.Printf("🍺 Created deployment %q.\n", result.GetName())
 		}
 	},
 }
@@ -140,4 +147,3 @@ func init() {
 }
 
 func int32Ptr(i int32) *int32 { return &i }
-

@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-    apiv1 "k8s.io/api/core/v1"
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    "k8s.io/client-go/kubernetes"
-    "k8s.io/client-go/tools/clientcmd"
-    "k8s.io/client-go/util/homedir"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 var deployment string
@@ -39,7 +39,7 @@ var deleteCmd = &cobra.Command{
 For example:
 
 minikubectl delete --deployment demo`,
-	Args: func(cmd *cobra.Command, args[] string) error {
+	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			fmt.Printf("%d", len(args))
 			return errors.New("No need to have argument.")
@@ -47,25 +47,25 @@ minikubectl delete --deployment demo`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-        var kubeconfig *string
-        if home := homedir.HomeDir(); home != "" {
-            kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-        } else {
-            kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-        }
-        flag.Parse()
+		var kubeconfig *string
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
 
-        config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-        if err != nil {
-            panic(err)
-        }
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err)
+		}
 
-        clientset, err := kubernetes.NewForConfig(config)
-        if err != nil {
-            panic(err)
-        }
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
 
-        deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+		deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
 		fmt.Println("Deleting deployment...")
 		deletePolicy := metav1.DeletePropagationForeground
