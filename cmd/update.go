@@ -127,6 +127,5 @@ func init() {
 	updateCmd.Flags().StringVarP(&ou.deployment, "deployment", "d", "dep01", "deployment name")
 	updateCmd.MarkFlagRequired("deployment")
 	updateCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
-	updateCmd.MarkFlagRequired("image")
 	updateCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
 }
