@@ -29,7 +29,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-var deployment string
+var name string
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
@@ -80,7 +80,7 @@ minikubectl delete deployment --deployment demo`,
 
 		fmt.Println("Deleting deployment...")
 		deletePolicy := metav1.DeletePropagationForeground
-		if err := deploymentsClient.Delete(deployment, &metav1.DeleteOptions{
+		if err := deploymentsClient.Delete(name, &metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		}); err != nil {
 			fmt.Printf("☔ Fatal error: %s", err)
@@ -93,6 +93,6 @@ minikubectl delete deployment --deployment demo`,
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteDeploymentCmd)
-	deleteDeploymentCmd.Flags().StringVarP(&deployment, "deployment", "d", "", "deployment name")
-	deleteDeploymentCmd.MarkFlagRequired("deployment")
+	deleteDeploymentCmd.Flags().StringVarP(&name, "name", "d", "", "deployment name")
+	deleteDeploymentCmd.MarkFlagRequired("name")
 }
