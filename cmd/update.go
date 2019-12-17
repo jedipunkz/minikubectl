@@ -43,11 +43,22 @@ var (
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
 	Use:   "update",
+	Short: "update root deployment",
+	Long: `update command
+Allowed Arguments: deployment`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Required nested subcommand.")
+	},
+}
+
+// updateDeploymentCmd represents the update command
+var updateDeploymentCmd = &cobra.Command{
+	Use:   "deployment",
 	Short: "update a deployment",
 	Long: `update a deployment.
 For example:
 
-minikubectl update --deployment deployment01 --app app01 --container web01 --image nginx:latest --port 80`,
+minikubectl update deployment --name dep01 --app app01 --container web01 --image nginx:latest --port 80`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			fmt.Printf("%d", len(args))
@@ -62,10 +73,11 @@ minikubectl update --deployment deployment01 --app app01 --container web01 --ima
 
 func init() {
 	rootCmd.AddCommand(updateCmd)
-	updateCmd.Flags().StringVarP(&ou.name, "name", "n", "dep01", "deployment name")
-	updateCmd.MarkFlagRequired("name")
-	updateCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
-	updateCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
+	updateCmd.AddCommand(updateDeploymentCmd)
+	updateDeploymentCmd.Flags().StringVarP(&ou.name, "name", "n", "dep01", "deployment name")
+	updateDeploymentCmd.MarkFlagRequired("name")
+	updateDeploymentCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
+	updateDeploymentCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
 }
 
 func updateDeployment() {
