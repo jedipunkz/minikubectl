@@ -17,27 +17,23 @@ package cmd
 
 import (
 	"errors"
-	"flag"
 	"fmt"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/util/retry"
 )
 
 type OptionsUpdate struct {
-	deployment string
-	app        string
-	container  string
-	image      string
-	port       int32
-	replica    int32
+	name      string
+	app       string
+	container string
+	image     string
+	port      int32
+	replica   int32
 }
 
 var (
@@ -47,11 +43,22 @@ var (
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
 	Use:   "update",
+	Short: "update root deployment",
+	Long: `update command
+Allowed Arguments: deployment`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Required nested subcommand.")
+	},
+}
+
+// updateDeploymentCmd represents the update command
+var updateDeploymentCmd = &cobra.Command{
+	Use:   "deployment",
 	Short: "update a deployment",
 	Long: `update a deployment.
 For example:
 
-minikubectl update --deployment deployment01 --app app01 --container web01 --image nginx:latest --port 80`,
+minikubectl update deployment --name dep01 --app app01 --container web01 --image nginx:latest --port 80`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			fmt.Printf("%d", len(args))
@@ -60,71 +67,64 @@ minikubectl update --deployment deployment01 --app app01 --container web01 --ima
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		var kubeconfig *string
-		if home := homedir.HomeDir(); home != "" {
-			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-		} else {
-			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-		}
-		flag.Parse()
-
-		namespace := "default"
-
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-		if err != nil {
-			panic(err)
-		}
-
-		client, err := dynamic.NewForConfig(config)
-		if err != nil {
-			panic(err)
-		}
-
-		deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-
-		// Update Deployment
-		fmt.Println("Updating deployment...")
-		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			result, getErr := client.Resource(deploymentsRes).Namespace(namespace).Get(ou.deployment, metav1.GetOptions{})
-			if getErr != nil {
-				panic(getErr)
-			}
-
-			// update replica number
-			if ou.replica != -99 {
-				if err := unstructured.SetNestedField(result.Object, int64(ou.replica), "spec", "replicas"); err != nil {
-					panic(err)
-				}
-			}
-
-			// update image
-			if ou.image != "" {
-				containers, found, err := unstructured.NestedSlice(result.Object, "spec", "template", "spec", "containers")
-				if err != nil || !found || containers == nil {
-					panic(err)
-				}
-				if err := unstructured.SetNestedField(containers[0].(map[string]interface{}), ou.image, "image"); err != nil {
-					panic(err)
-				}
-				if err := unstructured.SetNestedField(result.Object, containers, "spec", "template", "spec", "containers"); err != nil {
-					panic(err)
-				}
-			}
-
-			_, updateErr := client.Resource(deploymentsRes).Namespace(namespace).Update(result, metav1.UpdateOptions{})
-			return updateErr
-		})
-		if retryErr != nil {
-			panic(retryErr)
-		}
-		fmt.Println("🐙 Updated deployment...")
+		updateDeployment()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(updateCmd)
-	updateCmd.Flags().StringVarP(&ou.deployment, "deployment", "d", "dep01", "deployment name")
-	updateCmd.MarkFlagRequired("deployment")
-	updateCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
-	updateCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
+	updateCmd.AddCommand(updateDeploymentCmd)
+	updateDeploymentCmd.Flags().StringVarP(&ou.name, "name", "n", "dep01", "deployment name")
+	updateDeploymentCmd.MarkFlagRequired("name")
+	updateDeploymentCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
+	updateDeploymentCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
+}
+
+func updateDeployment() {
+	namespace := "default"
+	config := loadConfig()
+
+	client, err := dynamic.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+
+	// Update Deployment
+	fmt.Println("Updating deployment...")
+	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		result, getErr := client.Resource(deploymentsRes).Namespace(namespace).Get(ou.name, metav1.GetOptions{})
+		if getErr != nil {
+			panic(getErr)
+		}
+
+		// update replica number
+		if ou.replica != -99 {
+			if err := unstructured.SetNestedField(result.Object, int64(ou.replica), "spec", "replicas"); err != nil {
+				panic(err)
+			}
+		}
+
+		// update image
+		if ou.image != "" {
+			containers, found, err := unstructured.NestedSlice(result.Object, "spec", "template", "spec", "containers")
+			if err != nil || !found || containers == nil {
+				panic(err)
+			}
+			if err := unstructured.SetNestedField(containers[0].(map[string]interface{}), ou.image, "image"); err != nil {
+				panic(err)
+			}
+			if err := unstructured.SetNestedField(result.Object, containers, "spec", "template", "spec", "containers"); err != nil {
+				panic(err)
+			}
+		}
+
+		_, updateErr := client.Resource(deploymentsRes).Namespace(namespace).Update(result, metav1.UpdateOptions{})
+		return updateErr
+	})
+	if retryErr != nil {
+		panic(retryErr)
+	}
+	fmt.Println("🐙 Updated deployment...")
 }

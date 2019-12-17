@@ -19,16 +19,20 @@ go get -u github.com/jedipunkz/minikubectl
 
 List Deployments.
 
+* --namespace: namespace name
+
 ```bash
-minikubectl list deployments
+minikubectl list deployments [--namespace default]
 🍺 There are 1 deployments in the cluster
  * nginx-deployment (2 replicas)
 ```
 
 List Pods.
 
+* --namespace: namespace name
+
 ```bash
-minikubectl list pods
+minikubectl list pods [--namespace default]
 🍉 There are 11 pods in the cluster
  * nginx-deployment-54f57cf6bf-65k86
  * nginx-deployment-54f57cf6bf-6lj2s
@@ -45,7 +49,7 @@ minikubectl list pods
 
 Create Deployment.
 
-* --deployment: Deployment Name (Required Argument)
+* --name: Deployment Name (Required Argument)
 * --app: Application Name
 * --container: Container Name
 * --image: Container Image Name and Tag (Required Argument)
@@ -53,20 +57,20 @@ Create Deployment.
 * --replica: Replica Number
 
 ```bash
-minikubectl create --deployment demo --app demo --container demo --image nginx:1.12 --port 80 --replica 1
+minikubectl create deployment --name demo --app demo --container demo --image nginx:1.12 --port 80 --replica 1
 Creating deployment...
 🍺 Created deployment "demo".
 ```
 
 Update Deployment
 
-* --deployment: Deployment Name (Required Argument)
+* --name: Deployment Name (Required Argument)
 * --image: Container Image Name and Tag
 * --replica: Replica Number
 
 ```bash
 # update image tag
-minikubectl update --deployment demo --image nginx:1.11
+minikubectl update deployment --name demo --image nginx:1.11
 Updating deployment...
 🐙 Updated deployment...
 # update replica number
@@ -77,10 +81,10 @@ Updating deployment...
 
 Delete Deployment.
 
-* --deployment: Deployment Name (Required Argument)
+* --name: Deployment Name (Required Argument)
 
 ```bash
-minikubectl delete --deployment demo
+minikubectl delete deployment --name demo
 Deleting deployment...
 🍺 Deleted deployment.
 ```
