@@ -32,12 +32,12 @@ import (
 )
 
 type OptionsUpdate struct {
-	deployment string
-	app        string
-	container  string
-	image      string
-	port       int32
-	replica    int32
+	name      string
+	app       string
+	container string
+	image     string
+	port      int32
+	replica   int32
 }
 
 var (
@@ -85,7 +85,7 @@ minikubectl update --deployment deployment01 --app app01 --container web01 --ima
 		// Update Deployment
 		fmt.Println("Updating deployment...")
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			result, getErr := client.Resource(deploymentsRes).Namespace(namespace).Get(ou.deployment, metav1.GetOptions{})
+			result, getErr := client.Resource(deploymentsRes).Namespace(namespace).Get(ou.name, metav1.GetOptions{})
 			if getErr != nil {
 				panic(getErr)
 			}
@@ -123,8 +123,8 @@ minikubectl update --deployment deployment01 --app app01 --container web01 --ima
 
 func init() {
 	rootCmd.AddCommand(updateCmd)
-	updateCmd.Flags().StringVarP(&ou.deployment, "deployment", "d", "dep01", "deployment name")
-	updateCmd.MarkFlagRequired("deployment")
+	updateCmd.Flags().StringVarP(&ou.name, "name", "n", "dep01", "deployment name")
+	updateCmd.MarkFlagRequired("name")
 	updateCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
 	updateCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
 }
