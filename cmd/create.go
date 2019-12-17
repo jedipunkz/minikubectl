@@ -28,6 +28,14 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+
+	// "k8s.io/client-go/1.5/pkg/api"
+	// "k8s.io/client-go/1.5/pkg/api/unversioned"
+	// "k8s.io/client-go/1.5/pkg/api/v1"
+	"github.com/arekkas/kubernetes/pkg/api"
+	"github.com/arekkas/kubernetes/pkg/api/v1"
+	"github.com/arekkas/kubernetes/pkg/client/unversioned"
+	"k8s.io/client-go/kubernetes"
 )
 
 type Options struct {
@@ -41,6 +49,14 @@ type Options struct {
 
 var (
 	o = &Options{}
+)
+
+type OptionsNs struct {
+	name string
+}
+
+var (
+	on = &OptionsNs{}
 )
 
 // createCmd represents the create command
@@ -144,6 +160,47 @@ minikubectl create deployment --deployment deployment01 --app app01 --container 
 	},
 }
 
+// createDeploymentCmd represents the create command
+var createNamespaceCmd = &cobra.Command{
+	Use:   "namespace",
+	Short: "create a namespace",
+	Long: `create a namespace.
+For example:
+
+minikubectl create namespace --name demo`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var kubeconfig *string
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
+
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err)
+		}
+
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
+
+		ns := new(v1.Namespace)
+		// ns.TypeMeta = unversioned.TypeMeta{Kind: "Namespace", APIVersion: "v1"}
+		ns.ObjectMeta = v1.ObjectMeta{Name: on.name}
+		ns.Spec = v1.NamespaceSpec{}
+		// nsname, err := clientset.Core().Namespace().Create(ns)
+		nsname, err := &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}}
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("namespace: %s have created\n", nsname.ObjectMeta.Name)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(createCmd)
 	createCmd.AddCommand(createDeploymentCmd)
@@ -156,6 +213,7 @@ func init() {
 	createDeploymentCmd.Flags().Int32VarP(&o.port, "port", "p", 0, "port name")
 	createDeploymentCmd.MarkFlagRequired("port")
 	createDeploymentCmd.Flags().Int32VarP(&o.replica, "replica", "r", 1, "replicas number")
+	createCmd.AddCommand(createNamespaceCmd)
+	createNamespaceCmd.Flags().StringVarP(&on.name, "name", "n", "", "namespace name")
+	createNamespaceCmd.MarkFlagRequired("name")
 }
-
-func int32Ptr(i int32) *int32 { return &i }
