@@ -46,11 +46,22 @@ var (
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
+	Short: "create root command",
+	Long: `create command
+Allowed Arguments: deploymet`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Required nested subcommand.")
+	},
+}
+
+// createDeploymentCmd represents the create command
+var createDeploymentCmd = &cobra.Command{
+	Use:   "deployment",
 	Short: "create a deployment",
 	Long: `create a deployment.
 For example:
 
-minikubectl create --deployment deployment01 --app app01 --container web01 --image nginx:latest --port 80`,
+minikubectl create deployment --deployment deployment01 --app app01 --container web01 --image nginx:latest --port 80`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			fmt.Printf("%d", len(args))
@@ -135,15 +146,16 @@ minikubectl create --deployment deployment01 --app app01 --container web01 --ima
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	createCmd.Flags().StringVarP(&o.deployment, "deployment", "d", "dep01", "deployment name")
-	createCmd.MarkFlagRequired("deployment")
-	createCmd.Flags().StringVarP(&o.app, "app", "a", "app01", "app name")
-	createCmd.Flags().StringVarP(&o.container, "container", "c", "container01", "container name")
-	createCmd.Flags().StringVarP(&o.image, "image", "i", "nginx:latest", "image name")
-	createCmd.MarkFlagRequired("image")
-	createCmd.Flags().Int32VarP(&o.port, "port", "p", 0, "port name")
-	createCmd.MarkFlagRequired("port")
-	createCmd.Flags().Int32VarP(&o.replica, "replica", "r", 1, "replicas number")
+	createCmd.AddCommand(createDeploymentCmd)
+	createDeploymentCmd.Flags().StringVarP(&o.deployment, "deployment", "d", "dep01", "deployment name")
+	createDeploymentCmd.MarkFlagRequired("deployment")
+	createDeploymentCmd.Flags().StringVarP(&o.app, "app", "a", "app01", "app name")
+	createDeploymentCmd.Flags().StringVarP(&o.container, "container", "c", "container01", "container name")
+	createDeploymentCmd.Flags().StringVarP(&o.image, "image", "i", "nginx:latest", "image name")
+	createDeploymentCmd.MarkFlagRequired("image")
+	createDeploymentCmd.Flags().Int32VarP(&o.port, "port", "p", 0, "port name")
+	createDeploymentCmd.MarkFlagRequired("port")
+	createDeploymentCmd.Flags().Int32VarP(&o.replica, "replica", "r", 1, "replicas number")
 }
 
 func int32Ptr(i int32) *int32 { return &i }

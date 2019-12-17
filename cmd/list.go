@@ -16,12 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"path/filepath"
-	// "reflect"
 
 	"github.com/spf13/cobra"
 	apiv1 "k8s.io/api/core/v1"
@@ -34,18 +31,24 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list deployments, pods",
-	Long: `list your deployments or pods on k8s cluster.
+	Short: "list k8s resources",
+	Long: `list k8s resources
 For example:
 
 minikubectl list deployment.`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			log.Println("%s", len(args))
-			return errors.New("Require least 1 argument.")
-		}
-		return nil
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Required nested subcommand.")
 	},
+}
+
+// listDeploymentCmd represents the list command
+var listDeploymentCmd = &cobra.Command{
+	Use:   "deployment",
+	Short: "list deployments",
+	Long: `list your deployments on k8s cluster.
+For example:
+
+minikubectl list deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var kubeconfig *string
 		if home := homedir.HomeDir(); home != "" {
@@ -64,16 +67,61 @@ minikubectl list deployment.`,
 		if err != nil {
 			panic(err)
 		}
-		if args[0] == "deployment" || args[0] == "deployments" {
-			listDeployments(clientset)
-		} else if args[0] == "pod" || args[0] == "pods" {
-			listPods(clientset)
+		deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+		list, err := deploymentsClient.List(metav1.ListOptions{})
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("🍺 There are %d deployments in the cluster\n", len(list.Items))
+		for _, d := range list.Items {
+			fmt.Printf(" * %s (%d replicas)\n", d.Name, *d.Spec.Replicas)
+		}
+
+	},
+}
+
+// listPodCmd represents the list command
+var listPodCmd = &cobra.Command{
+	Use:   "pod",
+	Short: "list pods",
+	Long: `list your pods on k8s cluster.
+For example:
+
+minikubectl list pod.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var kubeconfig *string
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
+
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err)
+		}
+
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
+
+		pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("🍉 There are %d pods in the cluster\n", len(pods.Items))
+		for _, d := range pods.Items {
+			fmt.Printf(" * %s\n", d.Name)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(listCmd)
+	listCmd.AddCommand(listDeploymentCmd)
+	listCmd.AddCommand(listPodCmd)
 
 	// Here you will define your flags and configuration settings.
 
