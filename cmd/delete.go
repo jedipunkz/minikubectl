@@ -36,9 +36,20 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete a deployment.",
 	Long: `delete a deployment of k8s
+Allowed Arguments: deployment`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Required nested subcommand.")
+	},
+}
+
+// deleteCmd represents the delete command
+var deleteDeploymentCmd = &cobra.Command{
+	Use:   "delete deployment",
+	Short: "delete a deployment.",
+	Long: `delete a deployment of k8s
 For example:
 
-minikubectl delete --deployment demo`,
+minikubectl delete deployment --deployment demo`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			fmt.Printf("%d", len(args))
@@ -81,5 +92,6 @@ minikubectl delete --deployment demo`,
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
+	deleteCmd.AddCommand(deleteDeploymentCmd)
 	deleteCmd.Flags().StringVarP(&deployment, "deployment", "d", "", "deployment name")
 }
