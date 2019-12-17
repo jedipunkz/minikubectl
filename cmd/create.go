@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
@@ -70,77 +71,7 @@ minikubectl create deployment --deployment deployment01 --app app01 --container 
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		var kubeconfig *string
-		if home := homedir.HomeDir(); home != "" {
-			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-		} else {
-			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-		}
-		flag.Parse()
-
-		namespace := "default"
-
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-		if err != nil {
-			panic(err)
-		}
-
-		client, err := dynamic.NewForConfig(config)
-		if err != nil {
-			panic(err)
-		}
-
-		deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-
-		deployment := &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": "apps/v1",
-				"kind":       "Deployment",
-				"metadata": map[string]interface{}{
-					"name": o.deployment,
-				},
-				"spec": map[string]interface{}{
-					"replicas": o.replica,
-					"selector": map[string]interface{}{
-						"matchLabels": map[string]interface{}{
-							"app": o.app,
-						},
-					},
-					"template": map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"labels": map[string]interface{}{
-								"app": o.app,
-							},
-						},
-
-						"spec": map[string]interface{}{
-							"containers": []map[string]interface{}{
-								{
-									"name":  o.container,
-									"image": o.image,
-									"ports": []map[string]interface{}{
-										{
-											"name":          "http",
-											"protocol":      "TCP",
-											"containerPort": o.port,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		// Create Deployment
-		fmt.Println("Creating deployment...")
-		result, err := client.Resource(deploymentsRes).Namespace(namespace).Create(deployment, metav1.CreateOptions{})
-		if err != nil {
-			fmt.Printf("☔ Fatal error: %s", err)
-		} else {
-			fmt.Printf("🍺 Created deployment %q.\n", result.GetName())
-		}
+		createDeployment()
 	},
 }
 
@@ -158,4 +89,81 @@ func init() {
 	createDeploymentCmd.Flags().Int32VarP(&o.replica, "replica", "r", 1, "replicas number")
 }
 
-func int32Ptr(i int32) *int32 { return &i }
+func loadConfig() *rest.Config {
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err)
+	}
+
+	return config
+}
+
+func createDeployment() {
+	namespace := "default"
+	config := loadConfig()
+
+	client, err := dynamic.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+
+	deployment := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "apps/v1",
+			"kind":       "Deployment",
+			"metadata": map[string]interface{}{
+				"name": o.deployment,
+			},
+			"spec": map[string]interface{}{
+				"replicas": o.replica,
+				"selector": map[string]interface{}{
+					"matchLabels": map[string]interface{}{
+						"app": o.app,
+					},
+				},
+				"template": map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"labels": map[string]interface{}{
+							"app": o.app,
+						},
+					},
+
+					"spec": map[string]interface{}{
+						"containers": []map[string]interface{}{
+							{
+								"name":  o.container,
+								"image": o.image,
+								"ports": []map[string]interface{}{
+									{
+										"name":          "http",
+										"protocol":      "TCP",
+										"containerPort": o.port,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Create Deployment
+	fmt.Println("Creating deployment...")
+	result, err := client.Resource(deploymentsRes).Namespace(namespace).Create(deployment, metav1.CreateOptions{})
+	if err != nil {
+		fmt.Printf("☔ Fatal error: %s", err)
+	} else {
+		fmt.Printf("🍺 Created deployment %q.\n", result.GetName())
+	}
+}
