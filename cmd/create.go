@@ -32,12 +32,12 @@ import (
 )
 
 type Options struct {
-	deployment string
-	app        string
-	container  string
-	image      string
-	port       int32
-	replica    int32
+	name      string
+	app       string
+	container string
+	image     string
+	port      int32
+	replica   int32
 }
 
 var (
@@ -62,7 +62,7 @@ var createDeploymentCmd = &cobra.Command{
 	Long: `create a deployment.
 For example:
 
-minikubectl create deployment --deployment deployment01 --app app01 --container web01 --image nginx:latest --port 80`,
+minikubectl create deployment --name dep01 --app app01 --container web01 --image nginx:latest --port 80`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			fmt.Printf("%d", len(args))
@@ -78,8 +78,8 @@ minikubectl create deployment --deployment deployment01 --app app01 --container 
 func init() {
 	rootCmd.AddCommand(createCmd)
 	createCmd.AddCommand(createDeploymentCmd)
-	createDeploymentCmd.Flags().StringVarP(&o.deployment, "deployment", "d", "dep01", "deployment name")
-	createDeploymentCmd.MarkFlagRequired("deployment")
+	createDeploymentCmd.Flags().StringVarP(&o.name, "name", "n", "", "deployment name")
+	createDeploymentCmd.MarkFlagRequired("name")
 	createDeploymentCmd.Flags().StringVarP(&o.app, "app", "a", "app01", "app name")
 	createDeploymentCmd.Flags().StringVarP(&o.container, "container", "c", "container01", "container name")
 	createDeploymentCmd.Flags().StringVarP(&o.image, "image", "i", "nginx:latest", "image name")
@@ -122,7 +122,7 @@ func createDeployment() {
 			"apiVersion": "apps/v1",
 			"kind":       "Deployment",
 			"metadata": map[string]interface{}{
-				"name": o.deployment,
+				"name": o.name,
 			},
 			"spec": map[string]interface{}{
 				"replicas": o.replica,
