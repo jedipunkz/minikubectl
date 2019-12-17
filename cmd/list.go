@@ -47,7 +47,7 @@ For example:
 
 minikubectl list deployment.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		listDeployments()
+		listDeployment()
 	},
 }
 
@@ -60,7 +60,7 @@ For example:
 
 minikubectl list pod.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		listPods()
+		listPod()
 	},
 }
 
@@ -72,7 +72,7 @@ func init() {
 	listDeploymentCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "namespace name")
 }
 
-func listDeployments() {
+func listDeployment() {
 	config := loadConfig()
 
 	clientset, err := kubernetes.NewForConfig(config)
@@ -88,7 +88,7 @@ func listDeployments() {
 	}
 }
 
-func listPods() {
+func listPod() {
 	config := loadConfig()
 
 	clientset, err := kubernetes.NewForConfig(config)
