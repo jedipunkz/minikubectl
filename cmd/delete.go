@@ -44,7 +44,7 @@ Allowed Arguments: deployment`,
 
 // deleteCmd represents the delete command
 var deleteDeploymentCmd = &cobra.Command{
-	Use:   "delete deployment",
+	Use:   "deployment",
 	Short: "delete a deployment.",
 	Long: `delete a deployment of k8s
 For example:
@@ -93,5 +93,6 @@ minikubectl delete deployment --deployment demo`,
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteDeploymentCmd)
-	deleteCmd.Flags().StringVarP(&deployment, "deployment", "d", "", "deployment name")
+	deleteDeploymentCmd.Flags().StringVarP(&deployment, "deployment", "d", "", "deployment name")
+	deleteDeploymentCmd.MarkFlagRequired("deployment")
 }
