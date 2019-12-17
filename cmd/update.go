@@ -17,17 +17,13 @@ package cmd
 
 import (
 	"errors"
-	"flag"
 	"fmt"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -60,64 +56,7 @@ minikubectl update --deployment deployment01 --app app01 --container web01 --ima
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		var kubeconfig *string
-		if home := homedir.HomeDir(); home != "" {
-			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-		} else {
-			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-		}
-		flag.Parse()
-
-		namespace := "default"
-
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-		if err != nil {
-			panic(err)
-		}
-
-		client, err := dynamic.NewForConfig(config)
-		if err != nil {
-			panic(err)
-		}
-
-		deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-
-		// Update Deployment
-		fmt.Println("Updating deployment...")
-		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			result, getErr := client.Resource(deploymentsRes).Namespace(namespace).Get(ou.name, metav1.GetOptions{})
-			if getErr != nil {
-				panic(getErr)
-			}
-
-			// update replica number
-			if ou.replica != -99 {
-				if err := unstructured.SetNestedField(result.Object, int64(ou.replica), "spec", "replicas"); err != nil {
-					panic(err)
-				}
-			}
-
-			// update image
-			if ou.image != "" {
-				containers, found, err := unstructured.NestedSlice(result.Object, "spec", "template", "spec", "containers")
-				if err != nil || !found || containers == nil {
-					panic(err)
-				}
-				if err := unstructured.SetNestedField(containers[0].(map[string]interface{}), ou.image, "image"); err != nil {
-					panic(err)
-				}
-				if err := unstructured.SetNestedField(result.Object, containers, "spec", "template", "spec", "containers"); err != nil {
-					panic(err)
-				}
-			}
-
-			_, updateErr := client.Resource(deploymentsRes).Namespace(namespace).Update(result, metav1.UpdateOptions{})
-			return updateErr
-		})
-		if retryErr != nil {
-			panic(retryErr)
-		}
-		fmt.Println("🐙 Updated deployment...")
+		updateDeployment()
 	},
 }
 
@@ -127,4 +66,53 @@ func init() {
 	updateCmd.MarkFlagRequired("name")
 	updateCmd.Flags().StringVarP(&ou.image, "image", "i", "", "image name")
 	updateCmd.Flags().Int32VarP(&ou.replica, "replica", "r", -99, "replicas number")
+}
+
+func updateDeployment() {
+	namespace := "default"
+	config := loadConfig()
+
+	client, err := dynamic.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	deploymentsRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+
+	// Update Deployment
+	fmt.Println("Updating deployment...")
+	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		result, getErr := client.Resource(deploymentsRes).Namespace(namespace).Get(ou.name, metav1.GetOptions{})
+		if getErr != nil {
+			panic(getErr)
+		}
+
+		// update replica number
+		if ou.replica != -99 {
+			if err := unstructured.SetNestedField(result.Object, int64(ou.replica), "spec", "replicas"); err != nil {
+				panic(err)
+			}
+		}
+
+		// update image
+		if ou.image != "" {
+			containers, found, err := unstructured.NestedSlice(result.Object, "spec", "template", "spec", "containers")
+			if err != nil || !found || containers == nil {
+				panic(err)
+			}
+			if err := unstructured.SetNestedField(containers[0].(map[string]interface{}), ou.image, "image"); err != nil {
+				panic(err)
+			}
+			if err := unstructured.SetNestedField(result.Object, containers, "spec", "template", "spec", "containers"); err != nil {
+				panic(err)
+			}
+		}
+
+		_, updateErr := client.Resource(deploymentsRes).Namespace(namespace).Update(result, metav1.UpdateOptions{})
+		return updateErr
+	})
+	if retryErr != nil {
+		panic(retryErr)
+	}
+	fmt.Println("🐙 Updated deployment...")
 }
