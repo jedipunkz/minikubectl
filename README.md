@@ -24,24 +24,15 @@ go build
 ## Pre-Requirements
 
 * local or remote kubernetes environment
-
-You need any k8s cluster on local (such as minikube) or remote environment.
-
 * local kubectl command and $HOME/.kube/config file
-
-You need $HOME/.kube/config which you use for connecting your k8s cluster.
 
 ## Usage
 
 ### List Deployments.
 
-Options
-
-| Option | Description | Default Value |
-|--------|-------------|---------------|
-| --namespace | namespace name | default |
-
-Example
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --namespace | namespace name | default | ✔ |
 
 ```bash
 minikubectl list deployments [--namespace default]
@@ -51,13 +42,9 @@ minikubectl list deployments [--namespace default]
 
 ### List Pods.
 
-Options
-
-| Option | Description | Default Value |
-|--------|-------------|---------------|
-| --namespace | namespace name | default |
-
-Example
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --namespace | namespace name | default | ✔ |
 
 ```bash
 minikubectl list pods [--namespace default]
@@ -77,8 +64,6 @@ minikubectl list pods [--namespace default]
 
 ### Create Deployment.
 
-Options
-
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
 | --name | Deployment Name | N/A | ✔ |
@@ -88,8 +73,6 @@ Options
 | --port | Port Number | 0 | ✔ |
 | --replica | Replica Number | 1 | |
 
-Example
-
 ```bash
 minikubectl create deployment --name demo --app demo --container demo --image nginx:1.12 --port 80 --replica 1
 Creating deployment...
@@ -98,15 +81,11 @@ Creating deployment...
 
 ### Update Deployment.
 
-Options
-
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
 | --name | Deployment Name | dep01 | |
 | --image| Container Image Name and Tag | N/A |
 | --replica| Replica Number | N/A | |
-
-Example
 
 ```bash
 # update image tag
@@ -121,13 +100,9 @@ Updating deployment...
 
 ### Delete Deployment.
 
-Options
-
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
 | --name | Deployment Name | N/A | ✔ |
-
-Example
 
 ```bash
 minikubectl delete deployment --name demo
