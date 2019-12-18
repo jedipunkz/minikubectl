@@ -1,25 +1,47 @@
 # Minikubectl
 
-🔥 Minimal 🔥 k8s Client CLI. Using [client-go](https://github.com/kubernetes/client-go) (as Kubernetes Library).
-
 [![Build Status](https://travis-ci.org/jedipunkz/minikubectl.svg?branch=master)](https://travis-ci.org/jedipunkz/minikubectl)
 
+## Description
+
+🔥 Minimal 🔥 k8s Client CLI. Using [client-go](https://github.com/kubernetes/client-go) (as Kubernetes Library).
+
 ## Installation
+
+### Go get
 
 ```bash
 go get -u github.com/jedipunkz/minikubectl
 ```
 
+### Build
+
+```bash
+git clone https://github.com/jedipunkz/minikubectl .
+go build
+```
+
 ## Pre-Requirements
 
 * local or remote kubernetes environment
-* local kubectl command and .kube/config file
+
+You need any k8s cluster on local (such as minikube) or remote environment.
+
+* local kubectl command and $HOME/.kube/config file
+
+You need $HOME/.kube/config which you use for connecting your k8s cluster.
 
 ## Usage
 
-List Deployments.
+### List Deployments.
 
-* --namespace: namespace name
+Options
+
+| Option | Description | Default Value |
+|--------|-------------|---------------|
+| --namespace | namespace name | default |
+
+Example
 
 ```bash
 minikubectl list deployments [--namespace default]
@@ -27,9 +49,15 @@ minikubectl list deployments [--namespace default]
  * nginx-deployment (2 replicas)
 ```
 
-List Pods.
+### List Pods.
 
-* --namespace: namespace name
+Options
+
+| Option | Description | Default Value |
+|--------|-------------|---------------|
+| --namespace | namespace name | default |
+
+Example
 
 ```bash
 minikubectl list pods [--namespace default]
@@ -47,14 +75,20 @@ minikubectl list pods [--namespace default]
  * storage-provisioner
 ```
 
-Create Deployment.
+### Create Deployment.
 
-* --name: Deployment Name (Required Argument)
-* --app: Application Name
-* --container: Container Name
-* --image: Container Image Name and Tag (Required Argument)
-* --port: Port Number (Required Argument)
-* --replica: Replica Number
+Options
+
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --name | Deployment Name | N/A | ✔ |
+| --app | Application Name | app01 |  |
+| --container | Container Name | container01 | |
+| --image | Container Image Name and Tag | nginx:latest | ✔ |
+| --port | Port Number | 0 | ✔ |
+| --replica | Replica Number | 1 | |
+
+Example
 
 ```bash
 minikubectl create deployment --name demo --app demo --container demo --image nginx:1.12 --port 80 --replica 1
@@ -62,11 +96,17 @@ Creating deployment...
 🍺 Created deployment "demo".
 ```
 
-Update Deployment
+### Update Deployment.
 
-* --name: Deployment Name (Required Argument)
-* --image: Container Image Name and Tag
-* --replica: Replica Number
+Options
+
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --name | Deployment Name | dep01 | |
+| --image| Container Image Name and Tag | N/A |
+| --replica| Replica Number | N/A | |
+
+Example
 
 ```bash
 # update image tag
@@ -79,12 +119,22 @@ Updating deployment...
 🐙 Updated deployment...
 ```
 
-Delete Deployment.
+### Delete Deployment.
 
-* --name: Deployment Name (Required Argument)
+Options
+
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --name | Deployment Name | N/A | ✔ |
+
+Example
 
 ```bash
 minikubectl delete deployment --name demo
 Deleting deployment...
 🍺 Deleted deployment.
 ```
+
+## Author
+
+Tomokazu HIRAI https://twitter.com/jedipunkz
