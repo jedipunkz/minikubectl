@@ -28,11 +28,13 @@ go build
 
 ## Usage
 
-### List Deployments.
+### List
+
+#### List Deployments.
 
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
-| --namespace | namespace name | default | ✔ |
+| --namespace | namespace name | default | |
 
 ```bash
 minikubectl list deployments [--namespace default]
@@ -40,11 +42,11 @@ minikubectl list deployments [--namespace default]
  * nginx-deployment (2 replicas)
 ```
 
-### List Pods.
+#### List Pods.
 
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
-| --namespace | namespace name | default | ✔ |
+| --namespace | namespace name | default | |
 
 ```bash
 minikubectl list pods [--namespace default]
@@ -62,15 +64,17 @@ minikubectl list pods [--namespace default]
  * storage-provisioner
 ```
 
-### Create Deployment.
+### Create
+
+#### Create Deployment.
 
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
-| --name | Deployment Name | N/A | ✔ |
+| --name | Deployment Name | N/A | ✅ |
 | --app | Application Name | app01 |  |
 | --container | Container Name | container01 | |
-| --image | Container Image Name and Tag | nginx:latest | ✔ |
-| --port | Port Number | 0 | ✔ |
+| --image | Container Image Name and Tag | nginx:latest | ✅ |
+| --port | Port Number | 0 | ✅ |
 | --replica | Replica Number | 1 | |
 
 ```bash
@@ -79,12 +83,24 @@ Creating deployment...
 🍺 Created deployment "demo".
 ```
 
-### Update Deployment.
+#### Create Namespace.
 
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
-| --name | Deployment Name | dep01 | |
-| --image| Container Image Name and Tag | N/A |
+| --name | Namespace Name | N/A | ✅ |
+
+```bash
+minikubeclt create ns --name demo
+```
+
+### Update
+
+#### Update Deployment.
+
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --name | Deployment Name | dep01 | ✅ |
+| --image| Container Image Name and Tag | N/A | |
 | --replica| Replica Number | N/A | |
 
 ```bash
@@ -98,16 +114,28 @@ Updating deployment...
 🐙 Updated deployment...
 ```
 
-### Delete Deployment.
+### Delete
+
+#### Delete Deployment.
 
 | Option | Description | Default Value | Required |
 |--------|-------------|---------------|----------|
-| --name | Deployment Name | N/A | ✔ |
+| --name | Deployment Name | N/A | ✅ |
 
 ```bash
 minikubectl delete deployment --name demo
 Deleting deployment...
 🍺 Deleted deployment.
+```
+
+#### Delete Namespace.
+
+| Option | Description | Default Value | Required |
+|--------|-------------|---------------|----------|
+| --name | Namespace Name | N/A | ✅ |
+
+```bash
+minikubeclt delete ns --name demo
 ```
 
 ## Author
