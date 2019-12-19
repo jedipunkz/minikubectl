@@ -64,12 +64,26 @@ minikubectl list pod.`,
 	},
 }
 
+// listNsCmd represents the list command
+var listNsCmd = &cobra.Command{
+	Use:   "ns",
+	Short: "list namespaces",
+	Long: `list your namespaces on k8s cluster.
+For example:
+
+minikubectl list ns.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		listNs()
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(listCmd)
 	listCmd.AddCommand(listDeploymentCmd)
+	listDeploymentCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "namespace name")
 	listCmd.AddCommand(listPodCmd)
 	listPodCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "namespace name")
-	listDeploymentCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "namespace name")
+	listCmd.AddCommand(listNsCmd)
 }
 
 func listDeployment() {
@@ -100,5 +114,20 @@ func listPod() {
 	fmt.Printf("🍉 There are %d pods in the cluster\n", len(pods.Items))
 	for _, d := range pods.Items {
 		fmt.Printf(" * %s\n", d.Name)
+	}
+}
+
+func listNs() {
+	config := loadConfig()
+
+	clientset, err := kubernetes.NewForConfig(config)
+
+	ns, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("🍢 There are %d namespaces in the cluster\n", len(ns.Items))
+	for _, d := range ns.Items {
+		fmt.Printf(" * %s\n", d.GetName())
 	}
 }
