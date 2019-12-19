@@ -176,6 +176,6 @@ func createNs() {
 	nsSpec := &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
 	_, errc := clientset.CoreV1().Namespaces().Create(nsSpec)
 	if errc != nil {
-		panic(errc)
+		fmt.Printf("☔  Fatal error: %s", errc)
 	}
 }

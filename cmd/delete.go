@@ -38,7 +38,7 @@ Allowed Arguments: deployment`,
 	},
 }
 
-// deleteCmd represents the delete command
+// deleteDeploymentCmd represents the delete command
 var deleteDeploymentCmd = &cobra.Command{
 	Use:   "deployment",
 	Short: "delete a deployment.",
@@ -58,11 +58,27 @@ minikubectl delete deployment --deployment demo`,
 	},
 }
 
+// deleteNsCmd represents the delete command
+var deleteNsCmd = &cobra.Command{
+	Use:   "ns",
+	Short: "delete a namesapce.",
+	Long: `delete a namespace of k8s
+For example:
+
+minikubectl delete ns--name test`,
+	Run: func(cmd *cobra.Command, args []string) {
+		deleteNs()
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteDeploymentCmd)
 	deleteDeploymentCmd.Flags().StringVarP(&name, "name", "n", "", "deployment name")
 	deleteDeploymentCmd.MarkFlagRequired("name")
+	deleteCmd.AddCommand(deleteNsCmd)
+	deleteNsCmd.Flags().StringVarP(&name, "name", "n", "", "namespace name")
+	deleteNsCmd.MarkFlagRequired("name")
 }
 
 func deleteDeployment() {
@@ -83,5 +99,20 @@ func deleteDeployment() {
 		fmt.Printf("☔ Fatal error: %s", err)
 	} else {
 		fmt.Println("🍺 Deleted deployment.")
+	}
+}
+
+func deleteNs() {
+	namespace := name
+	config := loadConfig()
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	errc := clientset.CoreV1().Namespaces().Delete(namespace, &metav1.DeleteOptions{})
+	if errc != nil {
+		fmt.Printf("☔ Fatal error: %s", errc)
 	}
 }
