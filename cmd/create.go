@@ -20,10 +20,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 )
 
 type Options struct {
@@ -70,6 +72,19 @@ minikubectl create deployment --name dep01 --app app01 --container web01 --image
 	},
 }
 
+// createNs represents the create command
+var createNsCmd = &cobra.Command{
+	Use:   "ns",
+	Short: "create a namespace",
+	Long: `create a namespace.
+For example:
+
+minikubectl create ns --name test`,
+	Run: func(cmd *cobra.Command, args []string) {
+		createNs()
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(createCmd)
 	createCmd.AddCommand(createDeploymentCmd)
@@ -82,6 +97,9 @@ func init() {
 	createDeploymentCmd.Flags().Int32VarP(&o.port, "port", "p", 0, "port name")
 	createDeploymentCmd.MarkFlagRequired("port")
 	createDeploymentCmd.Flags().Int32VarP(&o.replica, "replica", "r", 1, "replicas number")
+	createCmd.AddCommand(createNsCmd)
+	createNsCmd.Flags().StringVarP(&o.name, "name", "n", "", "deployment name")
+	createNsCmd.MarkFlagRequired("name")
 }
 
 func createDeployment() {
@@ -143,5 +161,21 @@ func createDeployment() {
 		fmt.Printf("☔ Fatal error: %s", err)
 	} else {
 		fmt.Printf("🍺 Created deployment %q.\n", result.GetName())
+	}
+}
+
+func createNs() {
+	namespace := o.name
+	config := loadConfig()
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	nsSpec := &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+	_, errc := clientset.CoreV1().Namespaces().Create(nsSpec)
+	if errc != nil {
+		panic(errc)
 	}
 }
