@@ -64,6 +64,16 @@ minikubectl list pods [--namespace default]
  * storage-provisioner
 ```
 
+#### List Namespaces.
+
+```bash
+minikubectl list ns
+🍢 There are 4 namespaces in the cluster
+ * default
+ * kube-node-lease
+ * kube-public
+ * kube-system
+```
 ### Create
 
 #### Create Deployment.
